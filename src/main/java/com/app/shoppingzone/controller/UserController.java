@@ -1,8 +1,12 @@
 package com.app.shoppingzone.controller;
 
+import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +16,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.app.shoppingzone.dto.ErrorDto;
 import com.app.shoppingzone.dto.LoginRequest;
+import com.app.shoppingzone.dto.PaswordUpdateDto;
 //import com.app.pets.dto.ErrorDto;
 //import com.app.pets.dto.LoginRequest;
 //import com.app.pets.dto.SellerPasswodUpdateDto;
@@ -27,9 +34,11 @@ import com.app.shoppingzone.dto.LoginRequest;
 //import com.app.pets.enumeration.Status;
 //import com.app.pets.util.PasswordUtil;
 import com.app.shoppingzone.dto.UserDto;
+import com.app.shoppingzone.dto.ValidateOtpDTO;
 import com.app.shoppingzone.entity.PasswordUtils;
 import com.app.shoppingzone.entity.User;
 import com.app.shoppingzone.enumeration.RequestType;
+import com.app.shoppingzone.enumeration.Status;
 import com.app.shoppingzone.repository.UserRepository;
 import com.app.shoppingzone.response.Response;
 import com.app.shoppingzone.response.ResponseGenerator;
@@ -146,107 +155,107 @@ import lombok.NonNull;
 			}
 
 		}
-//		@ApiOperation(value = "Allows to change current password seller", response = Response.class)
-//		@PutMapping(value = "/change/password", produces = "application/json")
-//		public ResponseEntity<?> update(
-//				@ApiParam(value = "Payload for change current password seller") @RequestBody SellerPasswodUpdateDto request,
-//				@RequestHeader HttpHeaders httpHeaders) throws Exception {
-//			TransactionContext context = responseGenerator.generateTransationContext(httpHeaders);
-//			Optional<Seller> obj = sellerService.findByUserName(request.userName);
-//			String userName = obj.get().getUserName();
-//
-//			Optional<Seller> sOptional = sellerService.findByPasswordAndIsDeletedFalseAndIsLockedFalse(
-//					PasswordUtil.getEncryptedPassword(request.getOldPassword()), userName);
-//
-//			if (!sOptional.isPresent()) {
-//				return responseGenerator.errorResponse(context, "invalid.seller.password", HttpStatus.BAD_REQUEST);
-//			}
-//			Seller seller = sOptional.get();
-//
-//			if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-//				return responseGenerator.errorResponse(context, "invalid.new.and.confirm.password", HttpStatus.BAD_REQUEST);
-//			}
-//
-//			if (request.getConfirmPassword().equals(request.getOldPassword())) {
-//				return responseGenerator.errorResponse(context, "invalid.old.and.new.password", HttpStatus.BAD_REQUEST);
-//			}
-//
-//			seller.setPassword(PasswordUtil.getEncryptedPassword(request.getNewPassword()));
-//			seller.setForcePasswordChange(false);
-//			seller.setModifiedOn(new Date());
-//			seller.setPassword(PasswordUtil.getEncryptedPassword(request.getNewPassword()));
-//			sellerService.saveOrUpdate(seller);
-//			try {
-//				return responseGenerator.successResponse(context, "password.update", HttpStatus.OK);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//				logger.error(e.getMessage(), e);
-//				return responseGenerator.errorResponse(context, e.getMessage(), HttpStatus.BAD_REQUEST);
-//			}
-//		}
-//
-//		@ApiOperation(value = "Allows to validate customer using one time passsword")
-//		@RequestMapping(value = "/validate/otp", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-//		public ResponseEntity<?> validateOTP(
-//				@ApiParam(value = "The Signup request payload") @RequestBody ValidateOtpDTO request,
-//				@RequestHeader HttpHeaders httpHeader) throws Exception {
-//
-//			Optional<Seller> userOptional = sellerRepository.findByOtp(request.getOtp());
-//			System.out.print(request.getOtp());
-//
-//			// Optional<Seller> userOptional = sellerRepository.findLoggedInUser();
-//			Seller user = userOptional.get();
-//			ValidationResult validationResult = sellerValidation.validateOtp(RequestType.POST, request, user);
-//			Seller otp = (Seller) validationResult.getObject();
-//			sellerService.validateSeller(user, otp);
-//
-//			Map<String, Object> response = new HashMap<String, Object>();
-//			response.put("status", 1);
-//			response.put("message", "validation.otp.verified");
-//			TransactionContext context = responseGenerator.generateTransationContext(httpHeader);
-//			try {
-//				return responseGenerator.successResponse(context, "OTP verified successfully.", HttpStatus.OK);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//				logger.error(e.getMessage(), e);
-//				return responseGenerator.errorResponse(context, e.getMessage(), HttpStatus.BAD_REQUEST);
-//			}
-//		}
-//
-//		@ApiOperation(value = "Allows to resend one time password")
-//		@RequestMapping(value = "/resend/otp", method = RequestMethod.GET)
-//		public ResponseEntity<?> resendOtp(@ApiParam(value = "SellerId") @RequestParam("sellerId") UUID sellerId,
-//				@ApiParam @RequestHeader HttpHeaders httpHeader) throws Exception {
-//
-//			Optional<Seller> obj = sellerService.findByUserId(sellerId);
-//
-//			String userName = obj.get().getUserName();
-//
-//			Optional<Seller> userOptional = sellerRepository.findByUserName(userName);
-//			Seller user = userOptional.get();
-//
-//			Optional<Seller> otpObj = sellerRepository.findByPhoneNumber1AndStatus(user.getPhoneNumber1(), Status.ACTIVE);
-//
-//			String otps = new DecimalFormat("000000").format(new Random().nextInt(999999));
-//
-//			Date date = new Date(System.currentTimeMillis() + expiryInterval);
-//			System.out.println(otps);
-//			user.setOtp(otps);
-//			user.setExpiryDate(date);
-//			user.setIsOtpVerified(true);
-//			sellerRepository.saveAndFlush(user);
-//
-//			Map<String, Object> response = new HashMap<String, Object>();
-//			response.put("message", "OTP resend successfully.");
-//			response.put("otp", otps);
-//			TransactionContext context = responseGenerator.generateTransationContext(httpHeader);
-//			try {
-//				return responseGenerator.successResponse(context, response, HttpStatus.OK);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//				logger.error(e.getMessage(), e);
-//				return responseGenerator.errorResponse(context, e.getMessage(), HttpStatus.BAD_REQUEST);
-//			}
-//
-//		}
+		@ApiOperation(value = "Allows to change current password seller", response = Response.class)
+		@PutMapping(value = "/change/password", produces = "application/json")
+		public ResponseEntity<?> update(
+				@ApiParam(value = "Payload for change current password seller") @RequestBody PaswordUpdateDto request,
+				@RequestHeader HttpHeaders httpHeaders) throws Exception {
+			TransactionContext context = responseGenerator.generateTransationContext(httpHeaders);
+			Optional<User> obj = userService.findByUserName(request.userName);
+			String userName = obj.get().getUserName();
+
+			Optional<User> sOptional = userService.findByPasswordAndIsDeletedFalseAndIsLockedFalse(
+					PasswordUtils.getEncryptedPassword(request.getOldPassword()), userName);
+
+			if (!sOptional.isPresent()) {
+				return responseGenerator.errorResponse(context, "invalid.seller.password", HttpStatus.BAD_REQUEST);
+			}
+			User seller = sOptional.get();
+
+			if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+				return responseGenerator.errorResponse(context, "invalid.new.and.confirm.password", HttpStatus.BAD_REQUEST);
+			}
+
+			if (request.getConfirmPassword().equals(request.getOldPassword())) {
+				return responseGenerator.errorResponse(context, "invalid.old.and.new.password", HttpStatus.BAD_REQUEST);
+			}
+
+			seller.setPassword(PasswordUtils.getEncryptedPassword(request.getNewPassword()));
+			seller.setForcePasswordChange(false);
+			seller.setModifiedOn(new Date());
+			seller.setPassword(PasswordUtils.getEncryptedPassword(request.getNewPassword()));
+			userService.saveOrUpdate(seller);
+			try {
+				return responseGenerator.successResponse(context, "password.update", HttpStatus.OK);
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error(e.getMessage(), e);
+				return responseGenerator.errorResponse(context, e.getMessage(), HttpStatus.BAD_REQUEST);
+			}
+		}
+
+		@ApiOperation(value = "Allows to validate customer using one time passsword")
+		@RequestMapping(value = "/validate/otp", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+		public ResponseEntity<?> validateOTP(
+				@ApiParam(value = "The Signup request payload") @RequestBody ValidateOtpDTO request,
+				@RequestHeader HttpHeaders httpHeader) throws Exception {
+
+			Optional<User> userOptional = userRepository.findByOtp(request.getOtp());
+			System.out.print(request.getOtp());
+
+			// Optional<Seller> userOptional = sellerRepository.findLoggedInUser();
+			User user = userOptional.get();
+			ValidationResult validationResult = userValidation.validateOtp(RequestType.POST, request, user);
+			User otp = (User) validationResult.getObject();
+			userService.validateSeller(user, otp);
+
+			Map<String, Object> response = new HashMap<String, Object>();
+			response.put("status", 1);
+			response.put("message", "validation.otp.verified");
+			TransactionContext context = responseGenerator.generateTransationContext(httpHeader);
+			try {
+				return responseGenerator.successResponse(context, "OTP verified successfully.", HttpStatus.OK);
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error(e.getMessage(), e);
+				return responseGenerator.errorResponse(context, e.getMessage(), HttpStatus.BAD_REQUEST);
+			}
+		}
+
+		@ApiOperation(value = "Allows to resend one time password")
+		@RequestMapping(value = "/resend/otp", method = RequestMethod.GET)
+		public ResponseEntity<?> resendOtp(@ApiParam(value = "userId") @RequestParam("userId") UUID userId,
+				@ApiParam @RequestHeader HttpHeaders httpHeader) throws Exception {
+
+			Optional<User> obj = userService.findByUserId(userId);
+
+			String userName = obj.get().getUserName();
+
+			Optional<User> userOptional = userRepository.findByUserName(userName);
+			User user = userOptional.get();
+
+			Optional<User> otpObj = userRepository.findByPhoneNumber1AndStatus(user.getPhoneNumber1(), Status.ACTIVE);
+
+			String otps = new DecimalFormat("000000").format(new Random().nextInt(999999));
+
+			Date date = new Date(System.currentTimeMillis() + expiryInterval);
+			System.out.println(otps);
+			user.setOtp(otps);
+			user.setExpiryDate(date);
+			user.setIsOtpVerified(true);
+			userRepository.saveAndFlush(user);
+
+			Map<String, Object> response = new HashMap<String, Object>();
+			response.put("message", "OTP resend successfully.");
+			response.put("otp", otps);
+			TransactionContext context = responseGenerator.generateTransationContext(httpHeader);
+			try {
+				return responseGenerator.successResponse(context, response, HttpStatus.OK);
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error(e.getMessage(), e);
+				return responseGenerator.errorResponse(context, e.getMessage(), HttpStatus.BAD_REQUEST);
+			}
+
+		}
 }
