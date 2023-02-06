@@ -1,8 +1,11 @@
 package com.app.shoppingzone.validation;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import javax.security.auth.Subject;
@@ -30,6 +33,8 @@ public class UserValidation {
 
 	@Autowired
 	private UserService userService;
+	
+	
 
 	List<String> errors = null;
 	List<String> errorsObj = null;
@@ -37,6 +42,10 @@ public class UserValidation {
 
 	public ValidationResult validate(RequestType requestType, UserDto request) {
 
+		final Long expiryInterval = 5L * 60 * 1000;
+		String otps = new DecimalFormat("000000").format(new Random().nextInt(999999));
+
+		Date expireDate = new Date(System.currentTimeMillis() + expiryInterval);
 		errors = new ArrayList<>();
 		ValidationResult result = new ValidationResult();
 		 User user = null;
@@ -133,9 +142,7 @@ public class UserValidation {
 		if (ValidationUtil.isNullOrEmpty(request.getCountryCode())) {
 			errors.add("address.3.required");
 
-		}
-		
-
+		}		
 		String encrptPassword = PasswordUtils.getEncryptedPassword(request.getPassword());
 		if (errors.size() > 0) {
 			String errorMessage = errors.stream().map(a -> String.valueOf(a)).collect(Collectors.joining(", "));
@@ -150,17 +157,17 @@ public class UserValidation {
 //			role = roleRepository.findByRoleName(request.getUserRole().toString());
 			user = User.builder().fullName(request.getFullName()).userName(request.getUserName())
 					.phoneNumber1(request.getPhoneNumber1()).email(request.getEmail())
-					.watsapNumber(request.getWatsapNumber()).password(request.getPassword())
+					.watsapNumber(request.getWatsapNumber()).password(encrptPassword)
 					.userRole(request.getUserRole()).addressLine1(request.getAddressLine1())
 					.addressLine2(request.getAddressLine2()).cityId(request.getCityId()).stateId(request.getStateId())
 					.countryId(request.getCountryId()).countryCode(request.getCountryCode())
-					.expiryDate(request.getExpiryDate()).otp(request.getOtp()).build();
+					.expiryDate(expireDate).otp(otps).build();
 		} else {
 			user.setFullName(request.getFullName());
 			user.setUserName(request.getUserName());
 			user.setPhoneNumber1(request.getPhoneNumber1());
 			user.setEmail(request.getEmail());
-			user.setPassword(request.getPassword());
+			user.setPassword(encrptPassword);
 			user.setWatsapNumber(request.getWatsapNumber());
 			user.setUserRole(request.getUserRole());
 			user.setAddressLine1(request.getAddressLine1());
@@ -170,8 +177,8 @@ public class UserValidation {
 			user.setCountryId(request.getCountryId());
 			user.setCountryCode(request.getCountryCode());
 			user.setStatus(request.getStatus());
-			user.setExpiryDate(request.getExpiryDate());
-			user.setOtp(request.getOtp());
+			user.setExpiryDate(expireDate);
+			user.setOtp(otps);
 
 		}
 		result.setObject(user);

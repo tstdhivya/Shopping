@@ -31,32 +31,7 @@ public class UserService {
 	private @NonNull UserRepository userRepository;
 
 	public void saveOrUpdate(User userObj) {
-
-		final Long expiryInterval = 5L * 60 * 1000;
-
-		String otps = new DecimalFormat("000000").format(new Random().nextInt(999999));
-		System.out.println(otps);
-
-		Date expireDate = new Date(System.currentTimeMillis() + expiryInterval);
-		System.out.println(expireDate);
-		userObj.setExpiryDate(expireDate);
-		User user = new User();
-		user.setOtp(otps);
-		user.setExpiryDate(expireDate);
-		user.setUserName(userObj.getUserName());
-		user.setFullName(userObj.getFullName());
-		user.setPassword(userObj.getPassword());
-		user.setEmail(userObj.getEmail());
-		user.setUserRole(userObj.getUserRole());
-		user.setPhoneNumber1(userObj.getPhoneNumber1());
-		user.setWatsapNumber(userObj.getWatsapNumber());
-		user.setAddressLine1(userObj.getAddressLine1());
-		user.setAddressLine2(userObj.getAddressLine2());
-		user.setCityId(userObj.getCityId());
-		user.setCountryId(userObj.getCountryId());
-		user.setStateId(userObj.getStateId());
-		user.setCountryCode(userObj.getCountryCode());
-		userRepository.saveAndFlush(user);
+		userRepository.saveAndFlush(userObj);
 
 	}
 
